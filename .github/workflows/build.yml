@@ -3,11 +3,11 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ClarkCraft
     steps:
       - uses: actions/checkout@v4
+      - name: Find project
+        id: p
+        run: echo "dir=$(dirname $(find . -name settings.gradle -not -path './.git/*' | head -n1))" >> $GITHUB_OUTPUT
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -16,7 +16,8 @@ jobs:
         with:
           gradle-version: current
       - run: gradle build
+        working-directory: ${{ steps.p.outputs.dir }}
       - uses: actions/upload-artifact@v4
         with:
           name: ClarkCraft-jar
-          path: ClarkCraft/build/libs/*.jar
+          path: ${{ steps.p.outputs.dir }}/build/libs/*.jar
